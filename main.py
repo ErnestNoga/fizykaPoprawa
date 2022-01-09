@@ -1,7 +1,27 @@
+import os.path
 import pygame
 import pymunk
 import sys
 import configparser
+
+if not os.path.isfile("config.ini"):
+    print("Generating config.ini")
+    config = configparser.ConfigParser()
+    config["ENVIRONMENT"] = {
+        "gravity_X": 0,
+        "gravity_Y": 500,
+        "fps": 240
+    }
+    config["MAIN"] = {
+        "force_applied_X": 6000,
+        "force_applied_Y": 0
+    }
+    with open("config.ini", "w") as configfile:
+        config.write(configfile)
+    sys.exit()
+else:
+    config = configparser.ConfigParser()
+    config.read("config.ini")
 
 
 def game_over(exit_code):
@@ -18,7 +38,7 @@ class Tower:
         space.add(self.body, self.shape)
 
     def draw(self):
-        pygame.draw.rect(display, colors["black"], pygame.Rect((0, 300), (50, 600)))
+        pygame.draw.rect(display, colors["black"], pygame.Rect((0, 300), (50, 1600)))
 
 
 class Ball:
@@ -37,8 +57,8 @@ pygame.init()
 display = pygame.display.set_mode((800, 800))
 clock = pygame.time.Clock()
 space = pymunk.Space()
-space.gravity = (0, 500)
-fps = 120
+space.gravity = (int(config["ENVIRONMENT"]["gravity_X"]), int(config["ENVIRONMENT"]["gravity_Y"]))
+fps = int(config["ENVIRONMENT"]["fps"])
 colors = {
     "red": pygame.Color((255, 0, 0)),
     "green": pygame.Color((0, 255, 0)),
@@ -56,7 +76,7 @@ while True:
             game_over(0)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                ball.body.apply_impulse_at_local_point((10000, 0), (25, 0))
+                ball.body.apply_impulse_at_local_point((6000, 0), (25, 0))
 
     display.fill(colors["gray"])
 
