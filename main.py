@@ -23,6 +23,9 @@ if not os.path.isfile("config.ini"):
 else:
     config = configparser.ConfigParser()
     config.read("config.ini")
+    if int(config["ENVIRONMENT"]["fps"]) < 30:
+        print("fps set to less than 30. Setting to 30")
+        config["ENVIRONMENT"]["fps"] = "30"
 
 
 def game_over(exit_code):
@@ -40,6 +43,21 @@ class Tower:
 
     def draw(self):
         pygame.draw.rect(display, colors["black"], pygame.Rect((0, 300), (50, 1600)))
+
+
+class Wall:
+    def __init__(self, pos_x, pos_y, size_x, size_y):
+        self.size_x = size_x
+        self.size_y = size_y
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
+        self.body.position = (pos_x, pos_y)
+        self.shape = pymunk.Poly.create_box(self.body, (size_x, size_y))
+        space.add(self.body, self.shape)
+
+    def draw(self):
+        pygame.draw.rect(display, colors["black"], pygame.Rect((self.pos_x, self.pos_y), (self.size_x, self.size_y)))
 
 
 class Ball:
@@ -77,7 +95,7 @@ while True:
             game_over(0)
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                ball.body.apply_impulse_at_local_point((6000, 0), (25, 0))
+                ball.body.apply_impulse_at_local_point((int(config["MAIN"]["force_applied_X"]), int(config["MAIN"]["force_applied_Y"])), (25, 0))
 
     display.fill(colors["gray"])
 
