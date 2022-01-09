@@ -15,7 +15,9 @@ if not os.path.isfile("config.ini"):
     }
     config["MAIN"] = {
         "force_applied_X": 6000,
-        "force_applied_Y": 0
+        "force_applied_Y": 0,
+        "ball_mass": 10,
+        "ball_moment": 10
     }
     with open("config.ini", "w") as configfile:
         config.write(configfile)
@@ -26,6 +28,10 @@ else:
     if int(config["ENVIRONMENT"]["fps"]) < 30:
         print("fps set to less than 30. Setting to 30")
         config["ENVIRONMENT"]["fps"] = "30"
+    if int(config["MAIN"]["ball_mass"]) <= 0 or int(config["MAIN"]["ball_moment"]) <= 0:
+        print("ball settings too low. Ignoring")
+        config["MAIN"]["ball_mass"] = "1"
+        config["MAIN"]["ball_moment"] = "1"
 
 
 def game_over(exit_code):
@@ -37,15 +43,16 @@ def game_over(exit_code):
 class Tower:
     def __init__(self):
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
-        self.body.position = (0, 600)
-        self.shape = pymunk.Poly.create_box(self.body, (100, 600))
+        self.body.position = ((display.get_width() / 2), (display.get_height() / 2))
+        self.shape = pymunk.Poly.create_box(self.body, (25, 600))
         space.add(self.body, self.shape)
 
     def draw(self):
-        pygame.draw.rect(display, colors["black"], pygame.Rect((0, 300), (50, 1600)))
+        pygame.draw.rect(display, colors["black"], pygame.Rect(((display.get_width() / 2) - (25 / 2),
+                                                                (display.get_height() / 2) - (600 / 2)), (25, 1600)))
 
 
-class Wall:
+class Wall: #TODO: Add walls
     def __init__(self, pos_x, pos_y, size_x, size_y):
         self.size_x = size_x
         self.size_y = size_y
@@ -54,6 +61,7 @@ class Wall:
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = (pos_x, pos_y)
         self.shape = pymunk.Poly.create_box(self.body, (size_x, size_y))
+        self.shape.elasticity = 95
         space.add(self.body, self.shape)
 
     def draw(self):
@@ -62,8 +70,9 @@ class Wall:
 
 class Ball:
     def __init__(self):
-        self.body = pymunk.Body(10, 10, body_type=pymunk.Body.DYNAMIC)
-        self.body.position = (25, 0)
+        self.body = pymunk.Body(int(config["MAIN"]["ball_mass"]), int(config["MAIN"]["ball_moment"]),
+                                body_type=pymunk.Body.DYNAMIC)
+        self.body.position = (display.get_width() / 2, 0)
         self.shape = pymunk.Circle(self.body, 25)
         space.add(self.body, self.shape)
 
@@ -94,8 +103,9 @@ while True:
         if event.type == pygame.QUIT:
             game_over(0)
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                ball.body.apply_impulse_at_local_point((int(config["MAIN"]["force_applied_X"]), int(config["MAIN"]["force_applied_Y"])), (25, 0))
+            if event.key == pygame.K_RIGHT:
+                ball.body.apply_impulse_at_local_point(
+                    (int(config["MAIN"]["force_applied_X"]), int(config["MAIN"]["force_applied_Y"])), (25, 0))
 
     display.fill(colors["gray"])
 
