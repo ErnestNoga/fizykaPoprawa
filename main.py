@@ -14,8 +14,7 @@ if not os.path.isfile("config.ini"):
         "fps": 240
     }
     config["MAIN"] = {
-        "force_applied_X": 6000,
-        "force_applied_Y": 0,
+        "force_applied": 6000,
         "ball_mass": 10,
         "ball_moment": 10
     }
@@ -43,16 +42,20 @@ def game_over(exit_code):
 class Tower:
     def __init__(self):
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
-        self.body.position = ((display.get_width() / 2), (display.get_height() / 2))
+        self.body.position = ((display.get_width() / 2), (display.get_height() / 2) + 200)
         self.shape = pymunk.Poly.create_box(self.body, (25, 600))
         space.add(self.body, self.shape)
 
     def draw(self):
         pygame.draw.rect(display, colors["black"], pygame.Rect(((display.get_width() / 2) - (25 / 2),
-                                                                (display.get_height() / 2) - (600 / 2)), (25, 1600)))
+                                                                (display.get_height() / 2) - (600 / 2) + 200),
+                                                               (25, 1600)))
+
+    def remove(self):
+        space.remove(self.body, self.shape)
 
 
-class Wall: #TODO: Add walls
+class Wall:
     def __init__(self, pos_x, pos_y, size_x, size_y):
         self.size_x = size_x
         self.size_y = size_y
@@ -61,28 +64,35 @@ class Wall: #TODO: Add walls
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = (pos_x, pos_y)
         self.shape = pymunk.Poly.create_box(self.body, (size_x, size_y))
-        self.shape.elasticity = 95
+        self.shape.elasticity = 0.95
         space.add(self.body, self.shape)
 
     def draw(self):
-        pygame.draw.rect(display, colors["black"], pygame.Rect((self.pos_x, self.pos_y), (self.size_x, self.size_y)))
+        pygame.draw.rect(display, colors["black"], pygame.Rect((self.pos_x - (self.size_x / 2), self.pos_y - (self.size_y / 2)), (self.size_x, self.size_y)))
 
 
 class Ball:
     def __init__(self):
         self.body = pymunk.Body(int(config["MAIN"]["ball_mass"]), int(config["MAIN"]["ball_moment"]),
                                 body_type=pymunk.Body.DYNAMIC)
-        self.body.position = (display.get_width() / 2, 0)
+        self.body.position = (display.get_width() / 2, 50)
         self.shape = pymunk.Circle(self.body, 25)
+        self.shape.elasticity = 0.95
         space.add(self.body, self.shape)
 
     def draw(self):
         pygame.draw.circle(display, colors["white"], self.shape.body.position, 25)
 
+    def push_x(self, loc, force):
+        self.body.apply_impulse_at_local_point((force, 0), (loc, 0))
+
+    def push_y(self, loc, force):
+        self.body.apply_impulse_at_local_point((0, force), (0, loc))
+
 
 pygame.init()
 
-display = pygame.display.set_mode((800, 800))
+display = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 space = pymunk.Space()
 space.gravity = (int(config["ENVIRONMENT"]["gravity_X"]), int(config["ENVIRONMENT"]["gravity_Y"]))
@@ -97,20 +107,39 @@ colors = {
 }
 ball = Ball()
 tower = Tower()
+wall1 = Wall(0, display.get_height() / 2, 10, display.get_height())
+wall2 = Wall(display.get_width() / 2, 0, display.get_width(), 10)
+wall3 = Wall(display.get_width(), display.get_height() / 2, 10, display.get_height())
+wall4 = Wall(display.get_width() / 2, display.get_height(), display.get_width(), 10)
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game_over(0)
         if event.type == pygame.KEYDOWN:
+            if "tower" in globals():
+                tower.remove()
+                del tower
+            if event.key == pygame.K_ESCAPE:
+                game_over(0)
             if event.key == pygame.K_RIGHT:
-                ball.body.apply_impulse_at_local_point(
-                    (int(config["MAIN"]["force_applied_X"]), int(config["MAIN"]["force_applied_Y"])), (25, 0))
+                ball.push_x(-25, int(config["MAIN"]["force_applied"]))
+            if event.key == pygame.K_LEFT:
+                ball.push_x(25, -int(config["MAIN"]["force_applied"]))
+            if event.key == pygame.K_UP:
+                ball.push_y(-25, -int(config["MAIN"]["force_applied"]))
+            if event.key == pygame.K_DOWN:
+                ball.push_y(25, int(config["MAIN"]["force_applied"]))
 
     display.fill(colors["gray"])
 
-    tower.draw()
+    if "tower" in globals():
+        tower.draw()
     ball.draw()
+    wall1.draw()
+    wall2.draw()
+    wall3.draw()
+    wall4.draw()
 
     pygame.display.update()
     clock.tick(fps)
