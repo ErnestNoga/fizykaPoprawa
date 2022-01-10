@@ -95,6 +95,7 @@ class Ball:
 pygame.init()
 
 display = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+pygame.mouse.set_visible(False)
 clock = pygame.time.Clock()
 space = pymunk.Space()
 space.gravity = (int(config["ENVIRONMENT"]["gravity_X"]), int(config["ENVIRONMENT"]["gravity_Y"]))
