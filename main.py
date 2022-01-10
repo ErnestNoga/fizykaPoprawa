@@ -16,7 +16,9 @@ if not os.path.isfile("config.ini"):
     config["MAIN"] = {
         "force_applied": 6000,
         "ball_mass": 10,
-        "ball_moment": 10
+        "ball_moment": 10,
+        "wall_elasticity": 0.95,
+        "ball_elasticity": 0.95
     }
     with open("config.ini", "w") as configfile:
         config.write(configfile)
@@ -64,7 +66,7 @@ class Wall:
         self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
         self.body.position = (pos_x, pos_y)
         self.shape = pymunk.Poly.create_box(self.body, (size_x, size_y))
-        self.shape.elasticity = 0.95
+        self.shape.elasticity = float(config["MAIN"]["wall_elasticity"])
         space.add(self.body, self.shape)
 
     def draw(self):
@@ -77,7 +79,7 @@ class Ball:
                                 body_type=pymunk.Body.DYNAMIC)
         self.body.position = (display.get_width() / 2, 50)
         self.shape = pymunk.Circle(self.body, 25)
-        self.shape.elasticity = 0.95
+        self.shape.elasticity = float(config["MAIN"]["ball_elasticity"])
         space.add(self.body, self.shape)
 
     def draw(self):
@@ -107,10 +109,10 @@ colors = {
 }
 ball = Ball()
 tower = Tower()
-wall1 = Wall(0, display.get_height() / 2, 10, display.get_height())
-wall2 = Wall(display.get_width() / 2, 0, display.get_width(), 10)
-wall3 = Wall(display.get_width(), display.get_height() / 2, 10, display.get_height())
-wall4 = Wall(display.get_width() / 2, display.get_height(), display.get_width(), 10)
+wall1 = Wall(0, display.get_height() / 2, 0, display.get_height())
+wall2 = Wall(display.get_width() / 2, 0, display.get_width(), 0)
+wall3 = Wall(display.get_width(), display.get_height() / 2, 0, display.get_height())
+wall4 = Wall(display.get_width() / 2, display.get_height(), display.get_width(), 0)
 
 while True:
     for event in pygame.event.get():
