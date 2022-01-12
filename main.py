@@ -16,7 +16,6 @@ if not os.path.isfile("config.ini"):
     config["MAIN"] = {
         "force_applied": 6000,
         "ball_mass": 10,
-        "ball_moment": 10,
         "wall_elasticity": 0.95,
         "ball_elasticity": 0.95
     }
@@ -75,7 +74,7 @@ class Wall:
 
 class Ball:
     def __init__(self):
-        self.body = pymunk.Body(int(config["MAIN"]["ball_mass"]), int(config["MAIN"]["ball_moment"]),
+        self.body = pymunk.Body(int(config["MAIN"]["ball_mass"]), int(config["MAIN"]["ball_mass"]),
                                 body_type=pymunk.Body.DYNAMIC)
         self.body.position = (display.get_width() / 2, 50)
         self.shape = pymunk.Circle(self.body, 25)
