@@ -144,4 +144,5 @@ while True:
 
     pygame.display.update()
     clock.tick(fps)
-    space.step(1 / fps)
+    for i in range(1000):
+        space.step(0.001 / fps)
