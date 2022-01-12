@@ -28,10 +28,9 @@ else:
     if int(config["ENVIRONMENT"]["fps"]) < 30:
         print("fps set to less than 30. Setting to 30")
         config["ENVIRONMENT"]["fps"] = "30"
-    if int(config["MAIN"]["ball_mass"]) <= 0 or int(config["MAIN"]["ball_moment"]) <= 0:
+    if int(config["MAIN"]["ball_mass"]) <= 0:
         print("ball settings too low. Ignoring")
         config["MAIN"]["ball_mass"] = "1"
-        config["MAIN"]["ball_moment"] = "1"
 
 
 def game_over(exit_code):
