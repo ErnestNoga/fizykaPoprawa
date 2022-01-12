@@ -4,6 +4,7 @@ import pygame
 import pymunk
 import sys
 import configparser
+from pygame import gfxdraw
 
 if not os.path.isfile("config.ini"):
     print("Generating config.ini")
@@ -81,7 +82,11 @@ class Ball:
         space.add(self.body, self.shape)
 
     def draw(self):
-        pygame.draw.circle(display, colors["white"], self.shape.body.position, 25)
+        pos_x, pos_y = self.shape.body.position
+        pos_x = int(pos_x)
+        pos_y = int(pos_y)
+        gfxdraw.aacircle(display, pos_x, pos_y, 25, colors["white"])
+        gfxdraw.filled_circle(display, pos_x, pos_y, 25, colors["white"])
 
     def push_x(self, loc, force):
         self.body.apply_impulse_at_local_point((force, 0), (loc, 0))
@@ -92,7 +97,7 @@ class Ball:
 
 pygame.init()
 
-display = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+display = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, vsync=True)
 pygame.mouse.set_visible(False)
 clock = pygame.time.Clock()
 space = pymunk.Space()
