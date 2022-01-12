@@ -20,6 +20,10 @@ if not os.path.isfile("config.ini"):
         "wall_elasticity": 0.95,
         "ball_elasticity": 0.95
     }
+    config["OTHER"] = {
+        "vsync": 1,
+        "anti-aliasing": 1
+    }
     with open("config.ini", "w") as configfile:
         config.write(configfile)
     sys.exit()
@@ -32,6 +36,14 @@ else:
     if int(config["MAIN"]["ball_mass"]) <= 0:
         print("ball settings too low. Ignoring")
         config["MAIN"]["ball_mass"] = "1"
+    if config["OTHER"]["vsync"] == "1":
+        vsync = True
+    else:
+        vsync = False
+    if config["OTHER"]["anti-aliasing"] == "1":
+        anti_aliasing = True
+    else:
+        anti_aliasing = False
 
 
 def game_over(exit_code):
@@ -81,12 +93,15 @@ class Ball:
         self.shape.elasticity = float(config["MAIN"]["ball_elasticity"])
         space.add(self.body, self.shape)
 
-    def draw(self):
+    def draw_anti_aliasing(self):
         pos_x, pos_y = self.shape.body.position
         pos_x = int(pos_x)
         pos_y = int(pos_y)
         gfxdraw.aacircle(display, pos_x, pos_y, 25, colors["white"])
         gfxdraw.filled_circle(display, pos_x, pos_y, 25, colors["white"])
+
+    def draw(self):
+        pygame.draw.circle(display, colors["white"], self.body.position, 25)
 
     def push_x(self, loc, force):
         self.body.apply_impulse_at_local_point((force, 0), (loc, 0))
@@ -97,7 +112,7 @@ class Ball:
 
 pygame.init()
 
-display = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, vsync=True)
+display = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, vsync=vsync)
 pygame.mouse.set_visible(False)
 clock = pygame.time.Clock()
 space = pymunk.Space()
@@ -141,7 +156,10 @@ while True:
 
     if "tower" in globals():
         tower.draw()
-    ball.draw()
+    if anti_aliasing:
+        ball.draw_anti_aliasing()
+    else:
+        ball.draw()
     wall1.draw()
     wall2.draw()
     wall3.draw()
